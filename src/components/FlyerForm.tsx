@@ -24,6 +24,11 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
       onChange({ ...data, [name]: newValue });
       return;
     }
+
+    if (name === 'favoriteWord') {
+      onChange({ ...data, [name]: value.slice(0, 20) });
+      return;
+    }
     
     onChange({ ...data, [name]: value });
   };
@@ -104,7 +109,7 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
             <FormField label="Hobby" name="hobby" value={data.hobby} onChange={handleChange} placeholder="Reading, Coding..." />
             <FormField label="Social Handle" name="socialHandle" value={data.socialHandle} onChange={handleChange} placeholder="@username" />
           </div>
-          <FormField label="Favorite Word / Quote" name="favoriteWord" value={data.favoriteWord} onChange={handleChange} placeholder="Your inspirational quote..." />
+          <FormField label="Favorite Word / Quote" name="favoriteWord" value={data.favoriteWord} onChange={handleChange} placeholder="Max 20 chars" maxLength={20} />
           <FormField label="Class Crush" name="classCrush" value={data.classCrush} onChange={handleChange} placeholder="Who is your crush?" />
         </section>
 
