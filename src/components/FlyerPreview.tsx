@@ -215,11 +215,11 @@ export default function FlyerPreview({ data }: FlyerPreviewProps) {
 
 function FlyerDetail({ label, value, small, italic }: { label: string; value: string; small?: boolean; italic?: boolean }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className={`uppercase font-bold tracking-[0.1em] ${small ? 'text-[6px]' : 'text-[7px]'} opacity-70`} style={{ color: '#4ADE80' }}>
+    <div className="flex flex-col gap-0.5 overflow-hidden">
+      <span className={`uppercase font-bold tracking-[0.1em] ${small ? 'text-[6px]' : 'text-[7px]'} opacity-70 whitespace-nowrap truncate`} style={{ color: '#4ADE80' }}>
         {label}
       </span>
-      <span className={`text-white leading-tight ${small ? 'text-[9px]' : 'text-[10px]'} ${italic ? 'font-serif italic font-medium' : 'font-bold'}`}>
+      <span className={`text-white leading-tight truncate ${small ? 'text-[9px]' : 'text-[10px]'} ${italic ? 'font-serif italic font-medium' : 'font-bold'}`}>
         {value || '---'}
       </span>
     </div>
