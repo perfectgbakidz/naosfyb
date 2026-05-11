@@ -3,16 +3,50 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import FlyerForm from './components/FlyerForm';
 import FlyerPreview from './components/FlyerPreview';
 import { StudentData, INITIAL_DATA } from './types';
-import { GraduationCap, Info, Menu, X } from 'lucide-react';
+import { GraduationCap, Info, Menu, X, ShieldAlert } from 'lucide-react';
+
+declare global {
+  interface Window {
+    FlutterwaveCheckout: any;
+  }
+}
 
 export default function App() {
   const [data, setData] = useState<StudentData>(INITIAL_DATA);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Screenshot and Shortcut Protection
+  useEffect(() => {
+    const handleContext = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Disable PrtSc, F12, Ctrl+U, Ctrl+P, Ctrl+S
+      if (
+        e.key === 'PrintScreen' || 
+        e.key === 'F12' || 
+        (e.ctrlKey && (e.key === 'u' || e.key === 'p' || e.key === 's'))
+      ) {
+        e.preventDefault();
+        alert('Screenshots and shortcuts are disabled for security.');
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContext);
+    document.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContext);
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  }, []);
 
   return (
     <div className="flex h-screen bg-[#07130B] text-white overflow-hidden font-sans">
@@ -31,7 +65,7 @@ export default function App() {
 
       {/* Editorial Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-[340px] h-full flex flex-col border-r border-[#1E3A28] bg-[#07130B] transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-[340px] h-full flex flex-col border-r border-[#1E3A28] bg-[#07130B] transition-transform duration-300 ease-in-out anti-screenshot
         lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -44,7 +78,7 @@ export default function App() {
             <X size={20} />
           </button>
         </div>
-        <FlyerForm data={data} onChange={setData} />
+        <FlyerForm data={data} onChange={setData} isPaid={isPaid} setIsPaid={setIsPaid} />
       </aside>
 
       {/* Main Content Area */}
@@ -84,7 +118,8 @@ export default function App() {
            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#065f46] rounded-full blur-[120px]"></div>
         </div>
 
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 lg:p-12">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 lg:p-12 anti-screenshot">
+          <div className="anti-screenshot-overlay" />
           {/* Section Indicator */}
           <div className="mb-8 text-center">
             <span className="text-[10px] font-bold text-[#4ADE80] uppercase tracking-[0.4em] block mb-2">Editorial System</span>
@@ -96,7 +131,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             className="relative w-full max-w-[400px] flex justify-center"
           >
-            <FlyerPreview data={data} />
+            <FlyerPreview data={data} isPaid={isPaid} />
           </motion.div>
 
           <footer className="mt-16 pb-12 text-center opacity-30 px-12 max-w-2xl border-t border-[#1E3A28]/30 pt-8">

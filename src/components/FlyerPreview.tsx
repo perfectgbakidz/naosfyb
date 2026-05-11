@@ -5,46 +5,29 @@ import html2canvas from 'html2canvas';
 
 interface FlyerPreviewProps {
   data: StudentData;
+  isPaid: boolean;
 }
 
-export default function FlyerPreview({ data }: FlyerPreviewProps) {
+export default function FlyerPreview({ data, isPaid }: FlyerPreviewProps) {
   const flyerRef = useRef<HTMLDivElement>(null);
 
-  const downloadFlyer = async () => {
-    if (!flyerRef.current) return;
-    
-    try {
-      // Ensure fonts are ready for clear text rendering
-      await document.fonts.ready;
-      
-      const canvas = await html2canvas(flyerRef.current, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: '#0d2e1a',
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
-      });
-      
-      const link = document.createElement('a');
-      link.download = `nacos_flyer_${data.name.replace(/\s+/g, '_').toLowerCase()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (error) {
-      console.error('Error generating flyer:', error);
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center gap-8 py-8">
+    <div className="flex flex-col items-center gap-8 py-8 w-full">
       {/* Flyer Region */}
       <div 
         ref={flyerRef}
         id="flyer-capture"
-        className="flyer-gradient relative w-[500px] h-[650px] overflow-hidden flex flex-col pt-4 px-8 pb-3 text-white shadow-2xl"
+        className={`flyer-gradient relative w-[500px] h-[650px] overflow-hidden flex flex-col pt-4 px-8 pb-3 text-white shadow-2xl ${!isPaid ? 'grayscale-[0.8] opacity-90' : ''}`}
         style={{ border: '12px solid rgba(255, 255, 255, 0.05)' }}
       >
+        {/* Payment Required Watermark */}
+        {!isPaid && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none rotate-[-45deg] overflow-hidden">
+            <h2 className="text-white/10 text-6xl font-black uppercase tracking-[0.5em] whitespace-nowrap">
+              UNPAID PREVIEW • UNPAID PREVIEW • UNPAID PREVIEW
+            </h2>
+          </div>
+        )}
         {/* Watermark Logo */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] pointer-events-none select-none flex items-center justify-center overflow-hidden" style={{ opacity: 0.08 }}>
           <img 
@@ -198,18 +181,6 @@ export default function FlyerPreview({ data }: FlyerPreviewProps) {
             Dan Sugar Led Administration 2025/2026
           </p>
         </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex gap-4">
-        <button 
-          onClick={downloadFlyer}
-          className="flex items-center gap-2 px-8 py-4 hover:bg-white transition-all active:scale-95 shadow-xl shadow-black/20 text-[#0A1A0F] font-bold uppercase tracking-widest text-xs"
-          style={{ backgroundColor: '#4ADE80' }}
-        >
-          <Download size={16} />
-          <span>Generate PNG</span>
-        </button>
       </div>
     </div>
   );

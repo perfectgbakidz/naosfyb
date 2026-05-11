@@ -70,4 +70,27 @@
   .editorial-label {
     @apply text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1 block;
   }
+
+  /* Anti-Screenshot and Print Protection */
+  @media print {
+    body {
+      display: none !important;
+    }
+  }
+
+  .anti-screenshot {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .anti-screenshot-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    background: transparent;
+  }
 }

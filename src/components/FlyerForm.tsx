@@ -1,26 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StudentData, Level } from '../types';
-import { Camera, User, BookOpen, MessageSquare, Heart } from 'lucide-react';
+import { Camera, User, BookOpen, MessageSquare, Heart, CreditCard, Download, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface FlyerFormProps {
   data: StudentData;
   onChange: (data: StudentData) => void;
+  isPaid: boolean;
+  setIsPaid: (val: boolean) => void;
 }
 
-export default function FlyerForm({ data, onChange }: FlyerFormProps) {
+export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFormProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
+    // Safety check for payment lock
+    if (isPaid && (name === 'name' || name === 'photo')) {
+      if (!confirm('Modifying your name or photo after payment might require a new payment. Continue?')) {
+        return;
+      }
+      setIsPaid(false);
+    }
+
     if (name === 'name') {
-      // Limit to 17 characters
       let newValue = value.slice(0, 17);
-      
-      // Limit to 1 space maximum
       const parts = newValue.split(' ');
       if (parts.length > 2) {
         newValue = parts.slice(0, 2).join(' ');
       }
-      
       onChange({ ...data, [name]: newValue });
       return;
     }
@@ -36,11 +45,101 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (isPaid) {
+        if (!confirm('Changing photo will reset your payment status. Continue?')) return;
+        setIsPaid(false);
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         onChange({ ...data, photo: reader.result as string });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePayment = () => {
+    if (!data.name || !data.photo) {
+      alert("Please enter your name and upload a photo first.");
+      return;
+    }
+
+    setIsProcessing(true);
+    const txRef = `flw_nacos_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+    window.FlutterwaveCheckout({
+      public_key: (import.meta as any).env.VITE_FLUTTERWAVE_PUBLIC_KEY,
+      tx_ref: txRef,
+      amount: 500,
+      currency: "NGN",
+      payment_options: "card, university, mobilemoneyghana, ussd",
+      customer: {
+        email: "student@mapoly.edu.ng", // In real app, ask for email
+        name: data.name,
+      },
+      customizations: {
+        title: "NACOS MAPOLY Finalist Flyer",
+        description: "Payment for generation of premium finalist flyer",
+        logo: "https://raw.githubusercontent.com/perfectgbakidz/hostingimage/refs/heads/main/NACOSMM.png",
+      },
+      callback: (payment: any) => {
+        console.log("Payment callback:", payment);
+        if (payment.status === "successful") {
+          // Verify on backend
+          checkPaymentVerification(txRef);
+        } else {
+          setIsProcessing(false);
+          alert("Payment failed. Please try again.");
+        }
+      },
+      onclose: () => {
+        setIsProcessing(false);
+        console.log("Check-out closed");
+      },
+    });
+  };
+
+  const checkPaymentVerification = async (txRef: string) => {
+    try {
+      const response = await fetch(`/api/verify-payment/${txRef}`);
+      const result = await response.json();
+      if (result.verified) {
+        setIsPaid(true);
+        alert("Payment verified! You can now download your flyer.");
+      } else {
+        // Retry a few times if webhook is slow?
+        setTimeout(() => checkPaymentVerification(txRef), 3000);
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      setIsProcessing(false);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!isPaid) {
+      alert("Please make a payment of ₦500 to download.");
+      return;
+    }
+
+    const flyerElement = document.getElementById('flyer-capture');
+    if (!flyerElement) return;
+
+    try {
+      const canvas = await html2canvas(flyerElement, {
+        useCORS: true,
+        scale: 4, // High quality
+        backgroundColor: '#0d2e1a',
+      });
+      
+      const link = document.createElement('a');
+      link.download = `NACOS_Finalist_${data.name.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Download failed:', err);
+      alert('Generation failed. Please ensure you uploaded a clear photo.');
     }
   };
 
@@ -156,6 +255,34 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
             <FormField label="Best Experience On Campus" name="bestCampusExperience" value={data.bestCampusExperience} onChange={handleChange} placeholder="Memorable moment..." />
           </div>
         </section>
+      </div>
+
+      <div className="p-6 border-t border-[#1E3A28] bg-[#0A1A0F] space-y-3">
+        {!isPaid ? (
+          <button 
+            onClick={handlePayment}
+            disabled={isProcessing || !data.name || !data.photo}
+            className="w-full bg-[#4ADE80] text-black font-black py-4 uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-[#22c55e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isProcessing ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <CreditCard size={16} />
+            )}
+            Pay ₦500 to Generate
+          </button>
+        ) : (
+          <button 
+            onClick={handleDownload}
+            className="w-full bg-[#4ADE80] text-black font-black py-4 uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-[#22c55e] transition-colors"
+          >
+            <Download size={16} />
+            Download HD Flyer
+          </button>
+        )}
+        <p className="text-[8px] text-center text-gray-500 font-bold uppercase tracking-tighter">
+          Powered by Flutterwave Security. High resolution 4K output.
+        </p>
       </div>
     </div>
   );
