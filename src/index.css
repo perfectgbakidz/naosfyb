@@ -1,0 +1,52 @@
+@import "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  --font-serif: "Playfair Display", serif;
+}
+
+@layer components {
+  .tape-effect {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%) rotate(2deg);
+    width: 64px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+    clip-path: polygon(
+      0% 15%, 5% 5%, 95% 5%, 100% 15%,
+      100% 85%, 95% 95%, 5% 95%, 0% 85%
+    );
+  }
+
+  .flyer-gradient {
+    background: linear-gradient(135deg, #0d2e1a 0%, #1e5135 40%, #0a1a0f 100%);
+  }
+
+  .polaroid-frame {
+    background: #ffffff;
+    padding: 8px;
+    padding-bottom: 32px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    transform: rotate(-1deg);
+  }
+
+  .editorial-input {
+    @apply w-full border px-3 py-2 text-sm text-white focus:outline-none transition-colors;
+    background-color: #0a1a0f;
+    border-color: #1e3a28;
+  }
+
+  .editorial-input:focus {
+    border-color: #4ade80;
+  }
+
+  .editorial-label {
+    @apply text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1 block;
+  }
+}
