@@ -58,7 +58,7 @@ export default function App() {
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-12">
           {/* Section Indicator */}
           <div className="mb-8 text-center">
-            <span className="text-[10px] font-bold text-[#4ADE80] uppercase tracking-[0.4em] block mb-2">Social Director Editorial System</span>
+            <span className="text-[10px] font-bold text-[#4ADE80] uppercase tracking-[0.4em] block mb-2">Editorial System</span>
             <h2 className="text-2xl font-serif italic opacity-30">Generation Dashboard</h2>
           </div>
 
