@@ -85,11 +85,11 @@ export default function App() {
                   referrerPolicy="no-referrer"
                 />
              </div>
-             <p className="text-[8px] font-bold tracking-[0.2em] uppercase leading-relaxed font-sans mb-2">
-               Optimized for social media distribution. High-fidelity PNG export enabled.
+             <p className="text-[10px] font-black tracking-[0.2em] uppercase leading-relaxed font-sans mb-1 text-[#4ADE80]">
+               Dan Sugar Led Admin 2025/2026
              </p>
-             <p className="text-[7px] font-medium opacity-50 uppercase tracking-widest">
-               &copy; 2024 NACOS MAPOLY Chapter. All Rights Reserved.
+             <p className="text-[8px] font-bold opacity-70 uppercase tracking-[0.3em]">
+               President | Social Director | Gen Sec | Software Director
              </p>
           </footer>
         </div>
