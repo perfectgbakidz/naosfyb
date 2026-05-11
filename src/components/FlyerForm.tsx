@@ -25,29 +25,8 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
       return;
     }
 
-    const limits: Record<string, number> = {
-      nickname: 12,
-      stateOfOrigin: 15,
-      birthday: 15,
-      relationshipStatus: 10,
-      hobby: 20,
-      socialHandle: 15,
-      favoriteWord: 20,
-      classCrush: 15,
-      bestLevel: 8,
-      difficultLevel: 8,
-      bestCourse: 20,
-      worstCourse: 20,
-      favoriteLecturer: 15,
-      postHeld: 15,
-      careerAlternative: 20,
-      businessSkill: 15,
-      whatNext: 20,
-      bestCampusExperience: 25
-    };
-
-    if (limits[name]) {
-      onChange({ ...data, [name]: value.slice(0, limits[name]) });
+    if (name === 'favoriteWord') {
+      onChange({ ...data, [name]: value.slice(0, 20) });
       return;
     }
     
@@ -123,15 +102,15 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
         <section className="space-y-3">
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#1E3A28] pb-1">Personal & Social Details</h3>
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="State of Origin" name="stateOfOrigin" value={data.stateOfOrigin} onChange={handleChange} placeholder="e.g. Ogun" maxLength={15} />
-            <FormField label="Birthday" name="birthday" value={data.birthday} onChange={handleChange} placeholder="Month Day" maxLength={15} />
-            <FormField label="Relationship Status" name="relationshipStatus" value={data.relationshipStatus} onChange={handleChange} placeholder="Single/Married" maxLength={10} />
-            <FormField label="Nickname" name="nickname" value={data.nickname} onChange={handleChange} placeholder="e.g. Guru" maxLength={12} />
-            <FormField label="Hobby" name="hobby" value={data.hobby} onChange={handleChange} placeholder="Reading..." maxLength={20} />
-            <FormField label="Social Handle" name="socialHandle" value={data.socialHandle} onChange={handleChange} placeholder="@username" maxLength={15} />
+            <FormField label="State of Origin" name="stateOfOrigin" value={data.stateOfOrigin} onChange={handleChange} placeholder="e.g. Ogun State" />
+            <FormField label="Birthday" name="birthday" value={data.birthday} onChange={handleChange} placeholder="Month Day" />
+            <FormField label="Relationship Status" name="relationshipStatus" value={data.relationshipStatus} onChange={handleChange} placeholder="Single/Married" />
+            <FormField label="Nickname" name="nickname" value={data.nickname} onChange={handleChange} placeholder="e.g. Tech Guru" />
+            <FormField label="Hobby" name="hobby" value={data.hobby} onChange={handleChange} placeholder="Reading, Coding..." />
+            <FormField label="Social Handle" name="socialHandle" value={data.socialHandle} onChange={handleChange} placeholder="@username" />
           </div>
           <FormField label="Favorite Word / Quote" name="favoriteWord" value={data.favoriteWord} onChange={handleChange} placeholder="Max 20 chars" maxLength={20} />
-          <FormField label="Class Crush" name="classCrush" value={data.classCrush} onChange={handleChange} placeholder="Who is your crush?" maxLength={15} />
+          <FormField label="Class Crush" name="classCrush" value={data.classCrush} onChange={handleChange} placeholder="Who is your crush?" />
         </section>
 
         {/* Academic Profile */}
@@ -158,23 +137,23 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Best Level" name="bestLevel" value={data.bestLevel} onChange={handleChange} placeholder="e.g. ND 1" maxLength={8} />
-            <FormField label="Difficult Level" name="difficultLevel" value={data.difficultLevel} onChange={handleChange} placeholder="e.g. HND 2" maxLength={8} />
-            <FormField label="Best Course" name="bestCourse" value={data.bestCourse} onChange={handleChange} placeholder="Favorite" maxLength={20} />
-            <FormField label="Worse Course" name="worstCourse" value={data.worstCourse} onChange={handleChange} placeholder="Toughest" maxLength={20} />
-            <FormField label="Favorite Lecturer" name="favoriteLecturer" value={data.favoriteLecturer} onChange={handleChange} placeholder="Name" maxLength={15} />
-            <FormField label="Post Held" name="postHeld" value={data.postHeld} onChange={handleChange} placeholder="e.g. President" maxLength={15} />
+            <FormField label="Best Level" name="bestLevel" value={data.bestLevel} onChange={handleChange} placeholder="e.g. ND 1" />
+            <FormField label="Difficult Level" name="difficultLevel" value={data.difficultLevel} onChange={handleChange} placeholder="e.g. HND 2" />
+            <FormField label="Best Course" name="bestCourse" value={data.bestCourse} onChange={handleChange} placeholder="Favorite subject" />
+            <FormField label="Worse Course" name="worstCourse" value={data.worstCourse} onChange={handleChange} placeholder="Toughest subject" />
+            <FormField label="Favorite Lecturer" name="favoriteLecturer" value={data.favoriteLecturer} onChange={handleChange} placeholder="Name yours" />
+            <FormField label="Post Held" name="postHeld" value={data.postHeld} onChange={handleChange} placeholder="e.g. President" />
           </div>
-          <FormField label="If Not Com. Sci., What Else?" name="careerAlternative" value={data.careerAlternative} onChange={handleChange} placeholder="e.g. Law..." maxLength={20} />
+          <FormField label="If Not Com. Sci., What Else?" name="careerAlternative" value={data.careerAlternative} onChange={handleChange} placeholder="e.g. Law, Arts..." />
         </section>
 
         {/* Future & Professional */}
         <section className="space-y-3">
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#1E3A28] pb-1">Future & Professional</h3>
           <div className="grid grid-cols-1 gap-3">
-            <FormField label="Business Skill" name="businessSkill" value={data.businessSkill} onChange={handleChange} placeholder="e.g. Crypto..." maxLength={15} />
-            <FormField label="What Next After School?" name="whatNext" value={data.whatNext} onChange={handleChange} placeholder="Future plans..." maxLength={20} />
-            <FormField label="Best Experience On Campus" name="bestCampusExperience" value={data.bestCampusExperience} onChange={handleChange} placeholder="Memorable moment..." maxLength={25} />
+            <FormField label="Business Skill" name="businessSkill" value={data.businessSkill} onChange={handleChange} placeholder="e.g. Tailoring, Crypto..." />
+            <FormField label="What Next After School?" name="whatNext" value={data.whatNext} onChange={handleChange} placeholder="Your future plans..." />
+            <FormField label="Best Experience On Campus" name="bestCampusExperience" value={data.bestCampusExperience} onChange={handleChange} placeholder="Memorable moment..." />
           </div>
         </section>
       </div>
