@@ -134,7 +134,7 @@ export default function FlyerPreview({ data }: FlyerPreviewProps) {
             <div className="mt-2 text-left">
               <div className="inline-block">
                 <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tighter">
-                  {data.name}
+                  {data.name || 'Student Name'}
                 </h3>
                 <div className="h-0.5 w-full bg-[#4ADE80] mt-1.5"></div>
               </div>
@@ -143,10 +143,10 @@ export default function FlyerPreview({ data }: FlyerPreviewProps) {
               </p>
               <div className="mt-3 p-2 rounded flex flex-col gap-1" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <span className="text-[7px] font-bold uppercase" style={{ color: '#4ADE80' }}>Handle</span>
-                <span className="text-[10px] font-mono font-bold text-white">{data.socialHandle}</span>
+                <span className="text-[10px] font-mono font-bold text-white">{data.socialHandle || '---'}</span>
               </div>
               <div className="mt-2 p-1.5 shadow-inner rounded" style={{ backgroundColor: 'rgba(6, 78, 59, 0.4)', border: '1px solid rgba(6, 95, 70, 0.2)' }}>
-                <FlyerDetail label="Favorite Word" value={`"${data.favoriteWord}"`} italic />
+                <FlyerDetail label="Favorite Word" value={data.favoriteWord ? `"${data.favoriteWord}"` : '---'} italic />
               </div>
             </div>
           </div>

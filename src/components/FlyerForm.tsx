@@ -66,19 +66,30 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
           </div>
         </section>
 
+        {/* Full Name Section */}
+        <section className="space-y-3">
+          <FormField 
+            label="Full Name" 
+            name="name" 
+            value={data.name} 
+            onChange={handleChange} 
+            placeholder="Enter Student Full Name" 
+          />
+        </section>
+
         {/* Personal & Social */}
         <section className="space-y-3">
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#1E3A28] pb-1">Personal & Social Details</h3>
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="State of Origin" name="stateOfOrigin" value={data.stateOfOrigin} onChange={handleChange} />
-            <FormField label="Birthday" name="birthday" value={data.birthday} onChange={handleChange} />
-            <FormField label="Relationship Status" name="relationshipStatus" value={data.relationshipStatus} onChange={handleChange} />
-            <FormField label="Nickname" name="nickname" value={data.nickname} onChange={handleChange} />
-            <FormField label="Hobby" name="hobby" value={data.hobby} onChange={handleChange} />
-            <FormField label="Social Handle" name="socialHandle" value={data.socialHandle} onChange={handleChange} placeholder="@tiktok/@insta" />
+            <FormField label="State of Origin" name="stateOfOrigin" value={data.stateOfOrigin} onChange={handleChange} placeholder="e.g. Ogun State" />
+            <FormField label="Birthday" name="birthday" value={data.birthday} onChange={handleChange} placeholder="Month Day" />
+            <FormField label="Relationship Status" name="relationshipStatus" value={data.relationshipStatus} onChange={handleChange} placeholder="Single/Married" />
+            <FormField label="Nickname" name="nickname" value={data.nickname} onChange={handleChange} placeholder="e.g. Tech Guru" />
+            <FormField label="Hobby" name="hobby" value={data.hobby} onChange={handleChange} placeholder="Reading, Coding..." />
+            <FormField label="Social Handle" name="socialHandle" value={data.socialHandle} onChange={handleChange} placeholder="@username" />
           </div>
-          <FormField label="Favorite Word / Quote" name="favoriteWord" value={data.favoriteWord} onChange={handleChange} />
-          <FormField label="Class Crush" name="classCrush" value={data.classCrush} onChange={handleChange} />
+          <FormField label="Favorite Word / Quote" name="favoriteWord" value={data.favoriteWord} onChange={handleChange} placeholder="Your inspirational quote..." />
+          <FormField label="Class Crush" name="classCrush" value={data.classCrush} onChange={handleChange} placeholder="Who is your crush?" />
         </section>
 
         {/* Academic Profile */}
@@ -105,23 +116,23 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Best Level" name="bestLevel" value={data.bestLevel} onChange={handleChange} />
-            <FormField label="Difficult Level" name="difficultLevel" value={data.difficultLevel} onChange={handleChange} />
-            <FormField label="Best Course" name="bestCourse" value={data.bestCourse} onChange={handleChange} />
-            <FormField label="Worse Course" name="worstCourse" value={data.worstCourse} onChange={handleChange} />
-            <FormField label="Favorite Lecturer" name="favoriteLecturer" value={data.favoriteLecturer} onChange={handleChange} />
-            <FormField label="Post Held" name="postHeld" value={data.postHeld} onChange={handleChange} />
+            <FormField label="Best Level" name="bestLevel" value={data.bestLevel} onChange={handleChange} placeholder="e.g. ND 1" />
+            <FormField label="Difficult Level" name="difficultLevel" value={data.difficultLevel} onChange={handleChange} placeholder="e.g. HND 2" />
+            <FormField label="Best Course" name="bestCourse" value={data.bestCourse} onChange={handleChange} placeholder="Favorite subject" />
+            <FormField label="Worse Course" name="worstCourse" value={data.worstCourse} onChange={handleChange} placeholder="Toughest subject" />
+            <FormField label="Favorite Lecturer" name="favoriteLecturer" value={data.favoriteLecturer} onChange={handleChange} placeholder="Name yours" />
+            <FormField label="Post Held" name="postHeld" value={data.postHeld} onChange={handleChange} placeholder="e.g. President" />
           </div>
-          <FormField label="If Not Com. Sci., What Else?" name="careerAlternative" value={data.careerAlternative} onChange={handleChange} />
+          <FormField label="If Not Com. Sci., What Else?" name="careerAlternative" value={data.careerAlternative} onChange={handleChange} placeholder="e.g. Law, Arts..." />
         </section>
 
         {/* Future & Professional */}
         <section className="space-y-3">
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#1E3A28] pb-1">Future & Professional</h3>
           <div className="grid grid-cols-1 gap-3">
-            <FormField label="Business Skill" name="businessSkill" value={data.businessSkill} onChange={handleChange} />
-            <FormField label="What Next After School?" name="whatNext" value={data.whatNext} onChange={handleChange} />
-            <FormField label="Best Experience On Campus" name="bestCampusExperience" value={data.bestCampusExperience} onChange={handleChange} />
+            <FormField label="Business Skill" name="businessSkill" value={data.businessSkill} onChange={handleChange} placeholder="e.g. Tailoring, Crypto..." />
+            <FormField label="What Next After School?" name="whatNext" value={data.whatNext} onChange={handleChange} placeholder="Your future plans..." />
+            <FormField label="Best Experience On Campus" name="bestCampusExperience" value={data.bestCampusExperience} onChange={handleChange} placeholder="Memorable moment..." />
           </div>
         </section>
       </div>
