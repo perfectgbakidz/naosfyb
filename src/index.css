@@ -25,7 +25,28 @@
   }
 
   .flyer-gradient {
-    background: linear-gradient(135deg, #0d2e1a 0%, #1e5135 40%, #0a1a0f 100%);
+    background-color: #0d2e1a;
+    background-image: 
+      radial-gradient(at 100% 0%, hsla(160,84%,15%,1) 0, transparent 50%), 
+      radial-gradient(at 0% 0%, hsla(168,76%,14%,1) 0, transparent 50%), 
+      radial-gradient(at 100% 100%, hsla(162,91%,17%,1) 0, transparent 50%), 
+      radial-gradient(at 0% 100%, hsla(165,71%,18%,1) 0, transparent 50%), 
+      radial-gradient(at 50% 50%, hsla(158,82%,10%,1) 0, transparent 50%),
+      linear-gradient(135deg, rgba(13, 46, 26, 0.4) 0%, rgba(6, 78, 59, 0.4) 50%, rgba(2, 44, 34, 0.4) 100%);
+    position: relative;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
+  }
+
+  .flyer-gradient::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+    opacity: 0.03;
+    pointer-events: none;
   }
 
   .polaroid-frame {
