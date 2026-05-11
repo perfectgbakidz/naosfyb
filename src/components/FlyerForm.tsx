@@ -10,6 +10,21 @@ interface FlyerFormProps {
 export default function FlyerForm({ data, onChange }: FlyerFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'name') {
+      // Limit to 17 characters
+      let newValue = value.slice(0, 17);
+      
+      // Limit to 1 space maximum
+      const parts = newValue.split(' ');
+      if (parts.length > 2) {
+        newValue = parts.slice(0, 2).join(' ');
+      }
+      
+      onChange({ ...data, [name]: newValue });
+      return;
+    }
+    
     onChange({ ...data, [name]: value });
   };
 
@@ -73,7 +88,8 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
             name="name" 
             value={data.name} 
             onChange={handleChange} 
-            placeholder="Enter Student Full Name" 
+            placeholder="Max 17 chars, 1 space" 
+            maxLength={17}
           />
         </section>
 
@@ -140,13 +156,14 @@ export default function FlyerForm({ data, onChange }: FlyerFormProps) {
   );
 }
 
-function FormField({ label, name, value, onChange, placeholder, type = 'text' }: { 
+function FormField({ label, name, value, onChange, placeholder, type = 'text', maxLength }: { 
   label: string; 
   name: string; 
   value: string; 
   onChange: (e: any) => void; 
   placeholder?: string;
   type?: string;
+  maxLength?: number;
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -158,6 +175,7 @@ function FormField({ label, name, value, onChange, placeholder, type = 'text' }:
         onChange={onChange}
         placeholder={placeholder}
         className="editorial-input"
+        maxLength={maxLength}
       />
     </div>
   );
