@@ -141,12 +141,14 @@ export default function FlyerPreview({ data }: FlyerPreviewProps) {
               <p className="mt-1 text-[9px] font-bold uppercase tracking-wide leading-tight max-w-[180px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                 {LEVEL_LABELS[data.level]}
               </p>
-              <div className="mt-3 p-2 rounded flex flex-col gap-1" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <span className="text-[7px] font-bold uppercase" style={{ color: '#4ADE80' }}>Handle</span>
-                <span className="text-[10px] font-mono font-bold text-white">{data.socialHandle || '---'}</span>
-              </div>
-              <div className="mt-2 p-1.5 shadow-inner rounded" style={{ backgroundColor: 'rgba(6, 78, 59, 0.4)', border: '1px solid rgba(6, 95, 70, 0.2)' }}>
-                <FlyerDetail label="Favorite Word" value={data.favoriteWord ? `"${data.favoriteWord}"` : '---'} italic />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="p-2 rounded flex flex-col gap-1" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <span className="text-[7px] font-bold uppercase" style={{ color: '#4ADE80' }}>Handle</span>
+                  <span className="text-[9px] font-mono font-bold text-white truncate">{data.socialHandle || '---'}</span>
+                </div>
+                <div className="p-1.5 shadow-inner rounded flex items-center" style={{ backgroundColor: 'rgba(6, 78, 59, 0.4)', border: '1px solid rgba(6, 95, 70, 0.2)' }}>
+                  <FlyerDetail label="Favorite Word" value={data.favoriteWord ? `"${data.favoriteWord}"` : '---'} italic small />
+                </div>
               </div>
             </div>
           </div>
