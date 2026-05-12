@@ -193,7 +193,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
       const txRef = initResult.tx_ref;
 
       // 2. Open Flutterwave Checkout
-      window.FlutterwaveCheckout({
+      const modal = (window as any).FlutterwaveCheckout({
         public_key: publicKey,
         tx_ref: txRef,
         amount: 500,
@@ -210,6 +210,11 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         },
         callback: (payment: any) => {
           console.log("Payment callback:", payment);
+          
+          if (modal && typeof modal.close === 'function') {
+            modal.close();
+          }
+
           if (payment.status === "successful" || payment.status === "completed") {
             setIsVerifying(true);
             setIsProcessing(false);
