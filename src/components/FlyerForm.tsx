@@ -12,6 +12,7 @@ interface FlyerFormProps {
 
 export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFormProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -210,9 +211,12 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         callback: (payment: any) => {
           console.log("Payment callback:", payment);
           if (payment.status === "successful" || payment.status === "completed") {
+            setIsVerifying(true);
+            setIsProcessing(false);
             checkPaymentVerification(txRef);
           } else {
             setIsProcessing(false);
+            setIsVerifying(false);
             alert("Payment failed. Please try again.");
           }
         },
@@ -238,12 +242,15 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
       if (result.payment_status === "successful") {
         setIsPaid(true);
         setIsProcessing(false);
+        setIsVerifying(false);
         alert("Payment verified! Your premium flyer is ready.");
       } else if (result.payment_status === "pending") {
         // Retry every 4 seconds
+        setIsVerifying(true);
         setTimeout(() => checkPaymentVerification(txRef), 4000);
       } else {
         setIsProcessing(false);
+        setIsVerifying(false);
         alert("Payment was not successful (Status: " + result.payment_status + ").");
       }
     } catch (error) {
@@ -397,15 +404,15 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         {!isPaid ? (
           <button 
             onClick={handlePayment}
-            disabled={isProcessing || !data.name || !data.photo}
+            disabled={isProcessing || isVerifying || !data.name || !data.photo}
             className="w-full bg-[#4ADE80] text-black font-black py-4 uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-[#22c55e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isProcessing ? (
+            {isProcessing || isVerifying ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <CreditCard size={16} />
             )}
-            Pay ₦500 to Generate
+            {isVerifying ? 'Verifying Payment...' : (isProcessing ? 'Processing...' : 'Pay ₦500 to Generate')}
           </button>
         ) : (
           <button 
