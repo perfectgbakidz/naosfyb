@@ -7,8 +7,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import FlyerForm from './components/FlyerForm';
 import FlyerPreview from './components/FlyerPreview';
+import AdminDashboard from './components/AdminDashboard';
 import { StudentData, INITIAL_DATA } from './types';
-import { GraduationCap, Info, Menu, X, ShieldAlert } from 'lucide-react';
+import { GraduationCap, Info, Menu, X, ShieldAlert, Lock } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -20,6 +21,7 @@ export default function App() {
   const [data, setData] = useState<StudentData>(INITIAL_DATA);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   // Screenshot and Shortcut Protection
   useEffect(() => {
@@ -50,6 +52,11 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#07130B] text-white overflow-hidden font-sans">
+      <AnimatePresence>
+        {showAdmin && (
+          <AdminDashboard onClose={() => setShowAdmin(false)} />
+        )}
+      </AnimatePresence>
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -155,6 +162,15 @@ export default function App() {
              <p className="text-[8px] font-bold opacity-70 uppercase tracking-[0.3em]">
                President | Social Director | Gen Sec | Software Director
              </p>
+             <div className="mt-8 flex justify-center">
+               <button 
+                 onClick={() => setShowAdmin(true)}
+                 className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.4em] hover:text-[#4ADE80] transition-colors group"
+               >
+                 <Lock size={10} className="group-hover:scale-110 transition-transform" />
+                 Institutional Access
+               </button>
+             </div>
           </footer>
         </div>
       </main>

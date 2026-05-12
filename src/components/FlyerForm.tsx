@@ -57,7 +57,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
     }
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     const publicKey = (import.meta as any).env.VITE_FLUTTERWAVE_PUBLIC_KEY;
 
     if (!publicKey || publicKey === "") {
@@ -73,42 +73,64 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
 
     setIsProcessing(true);
     const txRef = `flw_nacos_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
 
-    window.FlutterwaveCheckout({
-      public_key: publicKey,
-      tx_ref: txRef,
-      amount: 500,
-      currency: "NGN",
-      payment_options: "card, university, mobilemoneyghana, ussd",
-      customer: {
-        email: "student@mapoly.edu.ng", // In real app, ask for email
-        name: data.name,
-      },
-      customizations: {
-        title: "NACOS MAPOLY Finalist Flyer",
-        description: "Payment for generation of premium finalist flyer",
-        logo: "https://raw.githubusercontent.com/perfectgbakidz/hostingimage/refs/heads/main/NACOSMM.png",
-      },
-      callback: (payment: any) => {
-        console.log("Payment callback:", payment);
-        if (payment.status === "successful") {
-          // Verify on backend
-          checkPaymentVerification(txRef);
-        } else {
+    try {
+      // 1. Submit pending record to database
+      const response = await fetch(`${backendUrl}/api/students/pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          txRef
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to initialize transaction on server");
+      }
+
+      // 2. Open Flutterwave Checkout
+      window.FlutterwaveCheckout({
+        public_key: publicKey,
+        tx_ref: txRef,
+        amount: 500,
+        currency: "NGN",
+        payment_options: "card, university, mobilemoneyghana, ussd",
+        customer: {
+          email: "student@mapoly.edu.ng",
+          name: data.name,
+        },
+        customizations: {
+          title: "NACOS MAPOLY Finalist Flyer",
+          description: "Payment for generation of premium finalist flyer",
+          logo: "https://raw.githubusercontent.com/perfectgbakidz/hostingimage/refs/heads/main/NACOSMM.png",
+        },
+        callback: (payment: any) => {
+          console.log("Payment callback:", payment);
+          if (payment.status === "successful") {
+            checkPaymentVerification(txRef);
+          } else {
+            setIsProcessing(false);
+            alert("Payment failed. Please try again.");
+          }
+        },
+        onclose: () => {
           setIsProcessing(false);
-          alert("Payment failed. Please try again.");
-        }
-      },
-      onclose: () => {
-        setIsProcessing(false);
-        console.log("Check-out closed");
-      },
-    });
+          console.log("Check-out closed");
+        },
+      });
+    } catch (error) {
+      console.error("Payment initialization error:", error);
+      alert("Something went wrong. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
   const checkPaymentVerification = async (txRef: string) => {
+    const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
     try {
-      const response = await fetch(`/api/verify-payment/${txRef}`);
+      const response = await fetch(`${backendUrl}/api/verify-payment/${txRef}`);
       const result = await response.json();
       if (result.verified) {
         setIsPaid(true);
