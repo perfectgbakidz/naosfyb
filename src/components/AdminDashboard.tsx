@@ -16,9 +16,20 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
     const authHeader = 'Basic ' + btoa(`${username}:${password}`);
     
+    if (!backendUrl) {
+      alert("Missing VITE_BACKEND_URL. Please set it in Settings > Environment Variables.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      console.log(`Attempting login to: ${backendUrl}/admin/dashboard`);
       const response = await fetch(`${backendUrl}/admin/dashboard`, {
-        headers: { 'Authorization': authHeader }
+        headers: { 
+          'Authorization': authHeader,
+          'Accept': 'application/json'
+        },
+        mode: 'cors'
       });
       
       if (response.ok) {
@@ -27,10 +38,17 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         const data = await response.json();
         setRecords(data.flyers || []);
       } else {
-        alert("Invalid credentials or unauthorized access");
+        const errorText = await response.text();
+        console.error("Login response error:", response.status, errorText);
+        alert(`Access Denied: ${response.status} ${response.statusText}`);
       }
-    } catch (err) {
-      alert("Login failed. Please check your connection.");
+    } catch (err: any) {
+      console.error("Login connection error:", err);
+      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+        alert("Connection Failed: Your backend might be sleeping (on Render) or CORS is not enabled. Check the browser console for details.");
+      } else {
+        alert("Login failed: " + err.message);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -25,7 +25,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
     }
 
     if (name === 'name') {
-      let newValue = value.slice(0, 17);
+      let newValue = value.slice(0, 18);
       const parts = newValue.split(' ');
       if (parts.length > 2) {
         newValue = parts.slice(0, 2).join(' ');
@@ -87,29 +87,31 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
       };
 
       const payload = {
-        full_name: data.name,
+        full_name: data.name.trim(),
         student_portrait: data.photo,
-        nickname: data.nickname,
-        state_of_origin: data.stateOfOrigin,
-        birthday_month,
-        birthday_day,
-        relationship_status: data.relationshipStatus,
-        hobby: data.hobby,
-        social_handle: data.socialHandle,
-        favorite_word_quote: data.favoriteWord,
-        class_crush: data.classCrush,
-        current_level: levelMapping[data.level] || '',
-        best_level: data.bestLevel,
-        difficult_level: data.difficultLevel,
-        best_course: data.bestCourse,
-        worst_course: data.worstCourse,
-        favorite_lecturer: data.favoriteLecturer,
-        post_held: data.postHeld,
-        career_alternative: data.careerAlternative,
-        business_skill: data.businessSkill,
-        whats_next: data.whatNext,
-        best_campus_experience: data.bestCampusExperience
+        nickname: data.nickname || "",
+        state_of_origin: data.stateOfOrigin || "",
+        birthday_month: birthday_month || "",
+        birthday_day: birthday_day || "",
+        relationship_status: data.relationshipStatus || "Single",
+        hobby: data.hobby || "",
+        social_handle: data.socialHandle || "",
+        favorite_word_quote: (data.favoriteWord || "").slice(0, 20),
+        class_crush: data.classCrush || "",
+        current_level: levelMapping[data.level] || "",
+        best_level: data.bestLevel || "",
+        difficult_level: data.difficultLevel || "",
+        best_course: data.bestCourse || "",
+        worst_course: data.worstCourse || "",
+        favorite_lecturer: data.favoriteLecturer || "",
+        post_held: data.postHeld || "",
+        career_alternative: data.careerAlternative || "",
+        business_skill: data.businessSkill || "",
+        whats_next: data.whatNext || "",
+        best_campus_experience: data.bestCampusExperience || ""
       };
+
+      console.log("Sending payload to backend:", payload);
 
       const response = await fetch(`${backendUrl}/api/flyers/initiate`, {
         method: 'POST',
@@ -119,7 +121,16 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        console.error("Backend error:", errData);
+        console.error("Backend error detail:", errData);
+        
+        if (response.status === 422 && errData.detail) {
+          const errors = Array.isArray(errData.detail) 
+            ? errData.detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join('\n')
+            : JSON.stringify(errData.detail);
+          alert(`Validation Error:\n${errors}`);
+        } else {
+          alert(`Backend Error (${response.status}): ${errData.message || "Something went wrong on the server."}`);
+        }
         throw new Error("Failed to initialize transaction on server");
       }
 
