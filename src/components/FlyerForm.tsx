@@ -209,7 +209,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         },
         callback: (payment: any) => {
           console.log("Payment callback:", payment);
-          if (payment.status === "successful") {
+          if (payment.status === "successful" || payment.status === "completed") {
             checkPaymentVerification(txRef);
           } else {
             setIsProcessing(false);

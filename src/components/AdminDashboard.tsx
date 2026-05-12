@@ -153,12 +153,23 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
 
       <main className="flex-1 overflow-auto p-6 space-y-8">
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <StatCard label="Total Records" value={stats.total_records} />
-            <StatCard label="Revenue" value={`₦${stats.total_revenue?.toLocaleString()}`} color="text-[#4ADE80]" />
-            <StatCard label="Successful" value={stats.successful_payments} color="text-green-500" />
-            <StatCard label="Pending" value={stats.pending_payments} color="text-yellow-500" />
-            <StatCard label="Failed" value={stats.failed_payments} color="text-red-500" />
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <StatCard label="Total Records" value={stats.total_records} />
+              <StatCard label="Revenue" value={`₦${stats.total_revenue?.toLocaleString()}`} color="text-[#4ADE80]" />
+              <StatCard label="Successful" value={stats.successful_payments} color="text-green-500" />
+              <StatCard label="Pending" value={stats.pending_payments} color="text-yellow-500" />
+              <StatCard label="Failed" value={stats.failed_payments} color="text-red-500" />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <StatCard label="ND2 Students" value={stats.nd2_count} />
+              <StatCard label="HND2 SWD" value={stats.hnd2_swd_count} />
+              <StatCard label="HND2 NCC" value={stats.hnd2_ncc_count} />
+              <StatCard label="Single" value={stats.single_count} color="text-pink-400" />
+              <StatCard label="Married" value={stats.married_count} color="text-purple-400" />
+              <StatCard label="Other Rel." value={stats.other_relationship_count} color="text-white/40" />
+            </div>
           </div>
         )}
 
@@ -171,57 +182,109 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
           )}
           
           {records.map((record, index) => (
-            <motion.div 
-              layout
-              key={record.tx_ref || index}
-              className="bg-[#0A1A0F] border border-[#1E3A28] rounded-xl overflow-hidden flex flex-col"
-            >
-              <div className="relative aspect-square bg-black">
-                {record.student_portrait ? (
-                  <img src={record.student_portrait} alt={record.full_name} className="w-full h-full object-cover opacity-60" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/20">
-                    <User size={40} />
-                  </div>
-                )}
-                <div className="absolute top-3 right-3">
-                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded ${
-                    record.payment_status === 'successful' ? 'bg-[#4ADE80] text-black' : 'bg-red-500/20 text-red-500 border border-red-500/30'
-                  }`}>
-                    {record.payment_status}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="p-4 flex-1 space-y-3">
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-tight truncate">{record.full_name}</h3>
-                  <p className="text-[9px] text-[#4ADE80] font-bold uppercase">{record.current_level}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <RecordField label="Hobby" value={record.hobby} />
-                  <RecordField label="Handle" value={record.social_handle} />
-                </div>
-                
-                <RecordField label="Quote" value={record.favorite_word_quote} />
-                
-                <div className="pt-3 border-t border-[#1E3A28] flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[7px] text-white/30 uppercase font-black">Transaction Ref</span>
-                    <span className="text-[9px] font-mono text-white/60">{record.tx_ref?.slice(-12)}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[7px] text-white/30 uppercase font-black">Date</span>
-                    <span className="text-[9px] text-white/60">{new Date(record.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <FlyerDetailCard key={record.tx_ref || index} record={record} />
           ))}
         </div>
       </main>
     </div>
+  );
+}
+
+function FlyerDetailCard({ record }: { record: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasValidPortrait = record.student_portrait && record.student_portrait !== "skipped" && record.student_portrait.startsWith('data:');
+
+  return (
+    <motion.div 
+      layout
+      className="bg-[#0A1A0F] border border-[#1E3A28] rounded-xl overflow-hidden flex flex-col h-fit"
+    >
+      <div className="relative aspect-square bg-black">
+        {hasValidPortrait ? (
+          <img 
+            src={record.student_portrait} 
+            alt={record.full_name} 
+            className="w-full h-full object-cover opacity-60" 
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-white/10">
+            <User size={48} className="mb-2 opacity-50" />
+            <span className="text-[7px] uppercase font-black tracking-widest opacity-30">Portrait Not Uploaded</span>
+          </div>
+        )}
+        <div className="absolute top-3 right-3">
+          <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+            record.payment_status === 'successful' ? 'bg-[#4ADE80] text-black' : 'bg-red-500/20 text-red-500 border border-red-500/30'
+          }`}>
+            {record.payment_status}
+          </span>
+        </div>
+      </div>
+      
+      <div className="p-4 flex-1 space-y-4">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-tight truncate">{record.full_name}</h3>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-[9px] text-[#4ADE80] font-bold uppercase">{record.current_level}</p>
+            {record.nickname && (
+              <span className="text-[8px] text-white/40 uppercase">"{record.nickname}"</span>
+            )}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <RecordField label="Hobby" value={record.hobby} />
+          <RecordField label="Handle" value={record.social_handle} />
+          <RecordField label="Relationship" value={record.relationship_status} />
+          <RecordField label="Birthday" value={record.birthday} />
+        </div>
+        
+        <RecordField label="Quote" value={record.favorite_word_quote} />
+
+        {isExpanded && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="pt-4 border-t border-[#1E3A28] space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <RecordField label="Origin" value={record.state_of_origin} />
+              <RecordField label="Class Crush" value={record.class_crush} />
+              <RecordField label="Best Level" value={record.best_level} />
+              <RecordField label="Tough Level" value={record.difficult_level} />
+              <RecordField label="Best Course" value={record.best_course} />
+              <RecordField label="Worst Course" value={record.worst_course} />
+              <RecordField label="Fav Lecturer" value={record.favorite_lecturer} />
+              <RecordField label="Post Held" value={record.post_held} />
+            </div>
+
+            <RecordField label="Career Alt" value={record.career_alternative} />
+            <RecordField label="Business Skill" value={record.business_skill} />
+            <RecordField label="What's Next" value={record.whats_next} />
+            <RecordField label="Campus Exp" value={record.best_campus_experience} />
+          </motion.div>
+        )}
+
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[9px] uppercase font-black tracking-widest text-white/50 hover:text-white transition-colors"
+        >
+          {isExpanded ? 'Hide Dossier' : 'View Full Dossier'}
+        </button>
+        
+        <div className="pt-3 border-t border-[#1E3A28] flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[7px] text-white/30 uppercase font-black">Transaction Ref</span>
+            <span className="text-[9px] font-mono text-white/60">{record.tx_ref?.slice(-12)}</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[7px] text-white/30 uppercase font-black">Date</span>
+            <span className="text-[9px] text-white/60">{new Date(record.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
