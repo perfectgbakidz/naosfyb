@@ -209,20 +209,29 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
           logo: "https://raw.githubusercontent.com/perfectgbakidz/hostingimage/refs/heads/main/NACOSMM.png",
         },
         callback: (payment: any) => {
-          console.log("Payment callback:", payment);
+          console.log("Payment callback received:", payment);
           
-          if (modal && typeof modal.close === 'function') {
-            modal.close();
+          // Try multiple ways to close the modal
+          try {
+            if (modal && typeof modal.close === 'function') {
+              modal.close();
+            } else if (typeof (window as any).closePaymentModal === 'function') {
+              (window as any).closePaymentModal();
+            }
+          } catch (err) {
+            console.error("Error closing modal:", err);
           }
 
           if (payment.status === "successful" || payment.status === "completed") {
+            console.log("Payment looks successful in callback, starting polling...");
             setIsVerifying(true);
             setIsProcessing(false);
             checkPaymentVerification(txRef);
           } else {
+            console.warn("Payment status in callback is not success:", payment.status);
             setIsProcessing(false);
             setIsVerifying(false);
-            alert("Payment failed. Please try again.");
+            alert("Payment failed or cancelled (Status: " + payment.status + ")");
           }
         },
         onclose: () => {
@@ -244,16 +253,20 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         headers: { 'Accept': 'application/json' }
       });
       const result = await response.json();
+      console.log("Polling verification result:", result);
+      
       if (result.payment_status === "successful") {
         setIsPaid(true);
         setIsProcessing(false);
         setIsVerifying(false);
+        console.log("Payment confirmed by backend!");
         alert("Payment verified! Your premium flyer is ready.");
       } else if (result.payment_status === "pending") {
         // Retry every 4 seconds
         setIsVerifying(true);
         setTimeout(() => checkPaymentVerification(txRef), 4000);
       } else {
+        console.warn("Payment status not successful:", result.payment_status);
         setIsProcessing(false);
         setIsVerifying(false);
         alert("Payment was not successful (Status: " + result.payment_status + ").");
