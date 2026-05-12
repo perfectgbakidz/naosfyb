@@ -7,6 +7,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [records, setRecords] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
 
@@ -23,13 +24,11 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     }
 
     try {
-      console.log(`Attempting login to: ${backendUrl}/admin/dashboard`);
       const response = await fetch(`${backendUrl}/admin/dashboard`, {
         headers: { 
           'Authorization': authHeader,
           'Accept': 'application/json'
-        },
-        mode: 'cors'
+        }
       });
       
       if (response.ok) {
@@ -37,18 +36,13 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         setIsLoggedIn(true);
         const data = await response.json();
         setRecords(data.flyers || []);
+        setStats(data);
       } else {
         const errorText = await response.text();
-        console.error("Login response error:", response.status, errorText);
-        alert(`Access Denied: ${response.status} ${response.statusText}`);
+        alert(`Access Denied: ${response.status}`);
       }
     } catch (err: any) {
-      console.error("Login connection error:", err);
-      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
-        alert("Connection Failed: Your backend might be sleeping (on Render) or CORS is not enabled. Check the browser console for details.");
-      } else {
-        alert("Login failed: " + err.message);
-      }
+      alert("Login failed: Check your connection and CORS settings.");
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +57,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
       });
       const data = await response.json();
       setRecords(data.flyers || []);
+      setStats(data);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -156,7 +151,17 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-6 space-y-8">
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <StatCard label="Total Records" value={stats.total_records} />
+            <StatCard label="Revenue" value={`₦${stats.total_revenue?.toLocaleString()}`} color="text-[#4ADE80]" />
+            <StatCard label="Successful" value={stats.successful_payments} color="text-green-500" />
+            <StatCard label="Pending" value={stats.pending_payments} color="text-yellow-500" />
+            <StatCard label="Failed" value={stats.failed_payments} color="text-red-500" />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {records.length === 0 && !isLoading && (
             <div className="col-span-full py-20 flex flex-col items-center justify-center opacity-20 capitalize">
@@ -225,6 +230,15 @@ function RecordField({ label, value }: { label: string; value: string }) {
     <div className="flex flex-col">
       <span className="text-[7px] text-[#4ADE80] uppercase font-black tracking-widest">{label}</span>
       <span className="text-[10px] text-white/80 font-medium truncate">{value || '---'}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color = "text-white" }: { label: string, value: any, color?: string }) {
+  return (
+    <div className="bg-[#0A1A0F] border border-[#1E3A28] p-4 rounded-xl">
+      <p className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-1">{label}</p>
+      <p className={`text-xl font-black ${color}`}>{value}</p>
     </div>
   );
 }

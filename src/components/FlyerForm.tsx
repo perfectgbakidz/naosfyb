@@ -50,11 +50,53 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         setIsPaid(false);
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange({ ...data, photo: reader.result as string });
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        // Compress image to reduce payload size
+        try {
+          const compressed = await compressImage(base64);
+          onChange({ ...data, photo: compressed });
+        } catch (err) {
+          console.error("Compression failed:", err);
+          onChange({ ...data, photo: base64 });
+        }
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const compressImage = (base64Str: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 600; // Sufficient for flyer
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject("No context");
+        ctx.drawImage(img, 0, 0, width, height);
+        // Use JPEG for better compression than PNG for photos
+        resolve(canvas.toDataURL('image/jpeg', 0.7)); 
+      };
+      img.onerror = reject;
+    });
   };
 
   const handlePayment = async () => {
@@ -86,9 +128,10 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         'HND2_NCC': 'HND2 - NCC'
       };
 
+      // Send the request to update backend
       const payload = {
         full_name: data.name.trim(),
-        student_portrait: data.photo,
+        student_portrait: "skipped", // Do not send heavy base64 to avoid 500-char limit
         nickname: data.nickname || "",
         state_of_origin: data.stateOfOrigin || "",
         birthday_month: birthday_month || "",
@@ -111,7 +154,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
         best_campus_experience: data.bestCampusExperience || ""
       };
 
-      console.log("Sending payload to backend:", payload);
+      console.log("Sending payload to backend (portrait stripped):", { ...payload, student_portrait: payload.student_portrait?.slice(0, 50) + "..." });
 
       const response = await fetch(`${backendUrl}/api/flyers/initiate`, {
         method: 'POST',
@@ -120,18 +163,29 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        console.error("Backend error detail:", errData);
+        const errorText = await response.text();
+        console.error("Raw backend error:", errorText);
+        
+        let errData;
+        try {
+          errData = JSON.parse(errorText);
+        } catch (e) {
+          throw new Error(`Server returned error ${response.status}: ${errorText.slice(0, 100)}`);
+        }
+
+        console.error("Parsed backend error detail:", errData);
         
         if (response.status === 422 && errData.detail) {
           const errors = Array.isArray(errData.detail) 
             ? errData.detail.map((e: any) => `${e.loc.join('.')}: ${e.msg}`).join('\n')
             : JSON.stringify(errData.detail);
           alert(`Validation Error:\n${errors}`);
+          throw new Error(`Validation Error: ${errors}`);
         } else {
-          alert(`Backend Error (${response.status}): ${errData.message || "Something went wrong on the server."}`);
+          const msg = errData.message || JSON.stringify(errData) || "Something went wrong on the server.";
+          alert(`Backend Error (${response.status}): ${msg}`);
+          throw new Error(`Backend Error (${response.status}): ${msg}`);
         }
-        throw new Error("Failed to initialize transaction on server");
       }
 
       const initResult = await response.json();
@@ -177,23 +231,25 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
   const checkPaymentVerification = async (txRef: string) => {
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
     try {
-      const response = await fetch(`${backendUrl}/api/flyers/status/${txRef}`);
+      const response = await fetch(`${backendUrl}/api/flyers/status/${txRef}`, {
+        headers: { 'Accept': 'application/json' }
+      });
       const result = await response.json();
       if (result.payment_status === "successful") {
         setIsPaid(true);
-        alert("Payment verified! You can now download your flyer.");
-      } else if (result.payment_status === "pending") {
-        // Retry a few times if webhook is slow (Max 10 retires)
-        setTimeout(() => checkPaymentVerification(txRef), 3000);
-      } else {
-        alert("Payment verification failed or was unsuccessful.");
         setIsProcessing(false);
+        alert("Payment verified! Your premium flyer is ready.");
+      } else if (result.payment_status === "pending") {
+        // Retry every 4 seconds
+        setTimeout(() => checkPaymentVerification(txRef), 4000);
+      } else {
+        setIsProcessing(false);
+        alert("Payment was not successful (Status: " + result.payment_status + ").");
       }
     } catch (error) {
       console.error("Verification error:", error);
-      setIsProcessing(false);
-    } finally {
-      // Don't set processing to false yet if we are still checking
+      // Don't alert on transient network errors during polling
+      setTimeout(() => checkPaymentVerification(txRef), 5000);
     }
   };
 
@@ -272,8 +328,8 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
             name="name" 
             value={data.name} 
             onChange={handleChange} 
-            placeholder="Max 17 chars, 1 space" 
-            maxLength={17}
+            placeholder="Max 18 chars, 1 space" 
+            maxLength={18}
           />
         </section>
 
