@@ -58,6 +58,14 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
   };
 
   const handlePayment = () => {
+    const publicKey = (import.meta as any).env.VITE_FLUTTERWAVE_PUBLIC_KEY;
+
+    if (!publicKey || publicKey === "") {
+      const msg = "Public Key required: Flutterwave Public Key is missing. Please set VITE_FLUTTERWAVE_PUBLIC_KEY in the environment variables (Settings > Environment Variables).";
+      alert(msg);
+      throw new Error(msg);
+    }
+
     if (!data.name || !data.photo) {
       alert("Please enter your name and upload a photo first.");
       return;
@@ -67,7 +75,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
     const txRef = `flw_nacos_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
     window.FlutterwaveCheckout({
-      public_key: (import.meta as any).env.VITE_FLUTTERWAVE_PUBLIC_KEY,
+      public_key: publicKey,
       tx_ref: txRef,
       amount: 500,
       currency: "NGN",
