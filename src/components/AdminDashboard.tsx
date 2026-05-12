@@ -14,22 +14,23 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     setIsLoading(true);
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
+    const authHeader = 'Basic ' + btoa(`${username}:${password}`);
+    
     try {
-      const response = await fetch(`${backendUrl}/api/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+      const response = await fetch(`${backendUrl}/admin/dashboard`, {
+        headers: { 'Authorization': authHeader }
       });
-      const data = await response.json();
-      if (data.success) {
-        setToken(data.token);
+      
+      if (response.ok) {
+        setToken(authHeader);
         setIsLoggedIn(true);
-        fetchRecords(data.token);
+        const data = await response.json();
+        setRecords(data.flyers || []);
       } else {
-        alert("Invalid credentials");
+        alert("Invalid credentials or unauthorized access");
       }
     } catch (err) {
-      alert("Login failed");
+      alert("Login failed. Please check your connection.");
     } finally {
       setIsLoading(false);
     }
@@ -39,11 +40,11 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
     setIsLoading(true);
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
     try {
-      const response = await fetch(`${backendUrl}/api/admin/records`, {
+      const response = await fetch(`${backendUrl}/admin/dashboard`, {
         headers: { 'Authorization': authToken }
       });
       const data = await response.json();
-      setRecords(data);
+      setRecords(data.flyers || []);
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
@@ -146,15 +147,15 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
             </div>
           )}
           
-          {records.map((record) => (
+          {records.map((record, index) => (
             <motion.div 
               layout
-              key={record.id}
+              key={record.tx_ref || index}
               className="bg-[#0A1A0F] border border-[#1E3A28] rounded-xl overflow-hidden flex flex-col"
             >
               <div className="relative aspect-square bg-black">
-                {record.photo_url ? (
-                  <img src={record.photo_url} alt={record.name} className="w-full h-full object-cover opacity-60" />
+                {record.student_portrait ? (
+                  <img src={record.student_portrait} alt={record.full_name} className="w-full h-full object-cover opacity-60" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white/20">
                     <User size={40} />
@@ -162,17 +163,17 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
                 )}
                 <div className="absolute top-3 right-3">
                   <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded ${
-                    record.status === 'paid' ? 'bg-[#4ADE80] text-black' : 'bg-red-500/20 text-red-500 border border-red-500/30'
+                    record.payment_status === 'successful' ? 'bg-[#4ADE80] text-black' : 'bg-red-500/20 text-red-500 border border-red-500/30'
                   }`}>
-                    {record.status}
+                    {record.payment_status}
                   </span>
                 </div>
               </div>
               
               <div className="p-4 flex-1 space-y-3">
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-tight truncate">{record.name}</h3>
-                  <p className="text-[9px] text-[#4ADE80] font-bold uppercase">{record.level}</p>
+                  <h3 className="text-sm font-black uppercase tracking-tight truncate">{record.full_name}</h3>
+                  <p className="text-[9px] text-[#4ADE80] font-bold uppercase">{record.current_level}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 mt-2">
@@ -180,7 +181,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
                   <RecordField label="Handle" value={record.social_handle} />
                 </div>
                 
-                <RecordField label="Quote" value={record.favorite_word} />
+                <RecordField label="Quote" value={record.favorite_word_quote} />
                 
                 <div className="pt-3 border-t border-[#1E3A28] flex items-center justify-between">
                   <div className="flex flex-col">

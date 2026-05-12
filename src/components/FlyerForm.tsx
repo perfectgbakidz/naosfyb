@@ -72,23 +72,59 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
     }
 
     setIsProcessing(true);
-    const txRef = `flw_nacos_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
 
     try {
-      // 1. Submit pending record to database
-      const response = await fetch(`${backendUrl}/api/students/pending`, {
+      // 1. Submit pending record to database (Map local to backend schema)
+      const birthdayParts = data.birthday.split(' ');
+      const birthday_month = birthdayParts[0] || '';
+      const birthday_day = birthdayParts.slice(1).join(' ') || '';
+
+      const levelMapping: Record<Level, string> = {
+        'ND2': 'ND2',
+        'HND2_SWD': 'HND2 - SWD',
+        'HND2_NCC': 'HND2 - NCC'
+      };
+
+      const payload = {
+        full_name: data.name,
+        student_portrait: data.photo,
+        nickname: data.nickname,
+        state_of_origin: data.stateOfOrigin,
+        birthday_month,
+        birthday_day,
+        relationship_status: data.relationshipStatus,
+        hobby: data.hobby,
+        social_handle: data.socialHandle,
+        favorite_word_quote: data.favoriteWord,
+        class_crush: data.classCrush,
+        current_level: levelMapping[data.level] || '',
+        best_level: data.bestLevel,
+        difficult_level: data.difficultLevel,
+        best_course: data.bestCourse,
+        worst_course: data.worstCourse,
+        favorite_lecturer: data.favoriteLecturer,
+        post_held: data.postHeld,
+        career_alternative: data.careerAlternative,
+        business_skill: data.businessSkill,
+        whats_next: data.whatNext,
+        best_campus_experience: data.bestCampusExperience
+      };
+
+      const response = await fetch(`${backendUrl}/api/flyers/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          txRef
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error("Backend error:", errData);
         throw new Error("Failed to initialize transaction on server");
       }
+
+      const initResult = await response.json();
+      const txRef = initResult.tx_ref;
 
       // 2. Open Flutterwave Checkout
       window.FlutterwaveCheckout({
@@ -130,20 +166,23 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
   const checkPaymentVerification = async (txRef: string) => {
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
     try {
-      const response = await fetch(`${backendUrl}/api/verify-payment/${txRef}`);
+      const response = await fetch(`${backendUrl}/api/flyers/status/${txRef}`);
       const result = await response.json();
-      if (result.verified) {
+      if (result.payment_status === "successful") {
         setIsPaid(true);
         alert("Payment verified! You can now download your flyer.");
-      } else {
-        // Retry a few times if webhook is slow?
+      } else if (result.payment_status === "pending") {
+        // Retry a few times if webhook is slow (Max 10 retires)
         setTimeout(() => checkPaymentVerification(txRef), 3000);
+      } else {
+        alert("Payment verification failed or was unsuccessful.");
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error("Verification error:", error);
       setIsProcessing(false);
     } finally {
-      setIsProcessing(false);
+      // Don't set processing to false yet if we are still checking
     }
   };
 
