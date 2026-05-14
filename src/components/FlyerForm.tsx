@@ -203,6 +203,9 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
           email: "student@mapoly.edu.ng",
           name: data.name,
         },
+        meta: {
+          transaction_id: txRef,
+        },
         customizations: {
           title: "NACOS MAPOLY Finalist Flyer",
           description: "Payment for generation of premium finalist flyer",
