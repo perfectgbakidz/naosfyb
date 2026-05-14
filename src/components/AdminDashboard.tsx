@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, Database, User, ShieldCheck, Download, Trash2, RefreshCw } from 'lucide-react';
-import { motion } from 'motion/react';
+import { LogIn, Database, User, ShieldCheck, Download, Trash2, RefreshCw, Edit3, X, Camera } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import FlyerPreview from './FlyerPreview';
+import { StudentData, Level } from '../types';
+import html2canvas from 'html2canvas';
 
 export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -10,6 +13,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState('');
+  const [editingRecord, setEditingRecord] = useState<any>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,15 +186,159 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
           )}
           
           {records.map((record, index) => (
-            <FlyerDetailCard key={record.tx_ref || index} record={record} />
+            <FlyerDetailCard 
+              key={record.tx_ref || index} 
+              record={record} 
+              onEdit={() => setEditingRecord(record)}
+            />
           ))}
         </div>
       </main>
+
+      <AnimatePresence>
+        {editingRecord && (
+          <AdminEditor 
+            record={editingRecord} 
+            onClose={() => setEditingRecord(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function FlyerDetailCard({ record }: { record: any }) {
+function AdminEditor({ record, onClose }: { record: any; onClose: () => void }) {
+  const [photo, setPhoto] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Map backend record to StudentData
+  const mapLevel = (lvl: string): Level => {
+    if (lvl?.includes('SWD')) return 'HND2_SWD';
+    if (lvl?.includes('NCC')) return 'HND2_NCC';
+    return 'ND2';
+  };
+
+  const studentData: StudentData = {
+    name: record.full_name || '',
+    photo: photo,
+    nickname: record.nickname || '',
+    stateOfOrigin: record.state_of_origin || '',
+    birthday: `${record.birthday_month} ${record.birthday_day}`.trim(),
+    relationshipStatus: record.relationship_status || 'Single',
+    hobby: record.hobby || '',
+    socialHandle: record.social_handle || '',
+    favoriteWord: record.favorite_word_quote || '',
+    classCrush: record.class_crush || '',
+    level: mapLevel(record.current_level),
+    bestLevel: record.best_level || '',
+    difficultLevel: record.difficult_level || '',
+    bestCourse: record.best_course || '',
+    worstCourse: record.worst_course || '',
+    favoriteLecturer: record.favorite_lecturer || '',
+    postHeld: record.post_held || '',
+    careerAlternative: record.career_alternative || '',
+    businessSkill: record.business_skill || '',
+    whatNext: record.whats_next || '',
+    bestCampusExperience: record.best_campus_experience || ''
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPhoto(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDownload = async () => {
+    const flyerElement = document.getElementById('flyer-capture');
+    if (!flyerElement) return;
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(flyerElement, {
+        useCORS: true,
+        scale: 4,
+        backgroundColor: '#0d2e1a',
+      });
+      const link = document.createElement('a');
+      link.download = `ADMIN_REGEN_${studentData.name.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error(err);
+      alert("Capture failed");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-md flex flex-col md:flex-row">
+      <div className="w-full md:w-1/2 p-8 overflow-y-auto flex flex-col space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-black uppercase text-[#4ADE80]">Regeneration Studio</h2>
+            <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mt-1">Admin Tool / Manual Override</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          <div className="p-6 bg-[#0A1A0F] border border-[#1E3A28] rounded-xl space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-white/60">1. Identity Verification</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <RecordField label="Full Name" value={record.full_name} />
+              <RecordField label="Level" value={record.current_level} />
+              <RecordField label="Status" value={record.payment_status} />
+              <RecordField label="Ref" value={record.tx_ref?.slice(-8)} />
+            </div>
+          </div>
+
+          <div className="p-6 bg-[#0A1A0F] border border-[#1E3A28] rounded-xl space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-white/60">2. Asset Injection (Portrait)</h3>
+            <div className="flex flex-col items-center">
+              <input type="file" id="admin-photo" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+              <label 
+                htmlFor="admin-photo"
+                className="w-full h-48 border-2 border-dashed border-[#1E3A28] hover:border-[#4ADE80] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors bg-black/20"
+              >
+                {photo ? (
+                  <img src={photo} className="w-full h-full object-cover rounded-lg" alt="Regen Preview" />
+                ) : (
+                  <>
+                    <Camera size={32} className="text-[#4ADE80] mb-2" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Select Portrait</span>
+                  </>
+                )}
+              </label>
+              <p className="text-[8px] text-white/30 mt-3 uppercase font-bold">Recommended: 1:1 Aspect Ratio / High Quality</p>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleDownload}
+            disabled={!photo || isGenerating}
+            className="w-full bg-[#4ADE80] text-black font-black py-5 uppercase tracking-[0.2em] text-xs rounded-xl hover:bg-[#22c55e] transition-all disabled:opacity-20 disabled:grayscale flex items-center justify-center gap-3"
+          >
+            {isGenerating ? 'Processing HD Export...' : 'Regenerate & Download'}
+            {!isGenerating && <Download size={18} />}
+          </button>
+        </div>
+      </div>
+
+      <div className="hidden md:flex flex-1 bg-[#0A1A0F] items-center justify-center p-8 border-l border-[#1E3A28]">
+        <div className="scale-[0.7] origin-center">
+          <FlyerPreview data={studentData} isPaid={true} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlyerDetailCard({ record, onEdit }: { record: any; onEdit: () => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasValidPortrait = record.student_portrait && record.student_portrait !== "skipped" && record.student_portrait.startsWith('data:');
 
@@ -266,12 +414,22 @@ function FlyerDetailCard({ record }: { record: any }) {
           </motion.div>
         )}
 
-        <button 
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[9px] uppercase font-black tracking-widest text-white/50 hover:text-white transition-colors"
-        >
-          {isExpanded ? 'Hide Dossier' : 'View Full Dossier'}
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[9px] uppercase font-black tracking-widest text-white/50 hover:text-white transition-colors"
+          >
+            {isExpanded ? 'Hide Dossier' : 'View Full Dossier'}
+          </button>
+          
+          <button 
+            onClick={onEdit}
+            className="px-4 py-2 bg-[#4ADE80]/10 hover:bg-[#4ADE80]/20 rounded-lg text-[9px] uppercase font-black tracking-widest text-[#4ADE80] transition-colors flex items-center gap-2"
+          >
+            <Edit3 size={12} />
+            Regen
+          </button>
+        </div>
         
         <div className="pt-3 border-t border-[#1E3A28] flex items-center justify-between">
           <div className="flex flex-col">

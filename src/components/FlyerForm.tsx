@@ -116,6 +116,9 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
 
     setIsProcessing(true);
     const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || '';
+    const BASE_AMOUNT = 1000;
+    const SERVICE_FEE = 30;
+    const TOTAL_AMOUNT = BASE_AMOUNT + SERVICE_FEE;
 
     try {
       // 1. Submit pending record to database (Map local to backend schema)
@@ -196,7 +199,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
       const modal = (window as any).FlutterwaveCheckout({
         public_key: publicKey,
         tx_ref: txRef,
-        amount: 500,
+        amount: TOTAL_AMOUNT,
         currency: "NGN",
         payment_options: "card, university, mobilemoneyghana, ussd",
         customer: {
@@ -283,7 +286,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
 
   const handleDownload = async () => {
     if (!isPaid) {
-      alert("Please make a payment of ₦500 to download.");
+      alert("Please make a payment of ₦1030 to download.");
       return;
     }
 
@@ -433,7 +436,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
             ) : (
               <CreditCard size={16} />
             )}
-            {isVerifying ? 'Verifying Payment...' : (isProcessing ? 'Processing...' : 'Pay ₦500 to Generate')}
+            {isVerifying ? 'Verifying Payment...' : (isProcessing ? 'Processing...' : `Pay ₦${1000 + 30} to Generate`)}
           </button>
         ) : (
           <button 
@@ -444,9 +447,14 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
             Download HD Flyer
           </button>
         )}
-        <p className="text-[8px] text-center text-gray-500 font-bold uppercase tracking-tighter">
-          Powered by Flutterwave Security. High resolution 4K output.
-        </p>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-[8px] text-center text-gray-500 font-bold uppercase tracking-tighter">
+            ₦1000 (Base) + ₦30 (Service Fee)
+          </p>
+          <p className="text-[8px] text-center text-gray-500 font-bold uppercase tracking-tighter">
+            Powered by Flutterwave Security. High resolution 4K output.
+          </p>
+        </div>
       </div>
     </div>
   );
