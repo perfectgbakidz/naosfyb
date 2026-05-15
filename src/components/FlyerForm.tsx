@@ -392,7 +392,7 @@ export default function FlyerForm({ data, onChange, isPaid, setIsPaid }: FlyerFo
                 onChange={handleChange}
                 className="editorial-input appearance-none bg-[#0a1a0f] pr-10"
               >
-                <option value="ND2">ND2</option>
+                <option value="ND2">ND2 - CS "DD Legends '26"</option>
                 <option value="HND2_SWD">HND2 - SWD "Class of Paragons 2026"</option>
                 <option value="HND2_NCC">HND2 - NCC "Class of Cloud Pioneers 2026"</option>
               </select>

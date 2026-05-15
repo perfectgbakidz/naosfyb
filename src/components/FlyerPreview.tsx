@@ -124,13 +124,13 @@ export default function FlyerPreview({ data, isPaid }: FlyerPreviewProps) {
               <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wide leading-tight max-w-[180px]" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                 {LEVEL_LABELS[data.level]}
               </p>
-              <div className="mt-2 space-y-1">
+              <div className="mt-3 space-y-3">
                 <div className="p-1.5 shadow-inner rounded flex items-center" style={{ backgroundColor: 'rgba(6, 78, 59, 0.4)', border: '1px solid rgba(6, 95, 70, 0.2)' }}>
                   <FlyerDetail label="Favorite Word" value={data.favoriteWord ? `"${data.favoriteWord}"` : '---'} italic small />
                 </div>
-                <div className="min-w-0 px-1 mt-1">
-                  <span className="text-[6px] font-bold uppercase tracking-wider block" style={{ color: '#4ADE80', lineHeight: '1.2' }}>Social Handle</span>
-                  <span className="text-[9px] font-mono font-bold text-white truncate block" style={{ lineHeight: '2.2', paddingTop: '1.5px', paddingBottom: '2.5px' }}>{data.socialHandle || '---'}</span>
+                <div className="min-w-0 px-1">
+                  <span className="text-[6px] font-bold uppercase tracking-wider block" style={{ color: '#4ADE80', lineHeight: '1.5' }}>Social Handle</span>
+                  <span className="text-[9px] font-mono font-bold text-white truncate block" style={{ lineHeight: '1.6', paddingTop: '2px', paddingBottom: '2px' }}>{data.socialHandle || '---'}</span>
                 </div>
               </div>
             </div>
@@ -188,11 +188,11 @@ export default function FlyerPreview({ data, isPaid }: FlyerPreviewProps) {
 
 function FlyerDetail({ label, value, small, italic }: { label: string; value: string; small?: boolean; italic?: boolean }) {
   return (
-    <div className="flex flex-col gap-0">
-      <span className={`uppercase font-bold tracking-[0.1em] ${small ? 'text-[6px]' : 'text-[7px]'} opacity-70`} style={{ color: '#4ADE80' }}>
+    <div className="flex flex-col gap-0.5">
+      <span className={`uppercase font-bold tracking-[0.1em] ${small ? 'text-[6px]' : 'text-[7px]'} opacity-70`} style={{ color: '#4ADE80', lineHeight: '1.2' }}>
         {label}
       </span>
-      <span className={`text-white leading-tight ${small ? 'text-[9px]' : 'text-[10px]'} ${italic ? 'font-serif italic font-medium' : 'font-bold'}`}>
+      <span className={`text-white block ${small ? 'text-[9px]' : 'text-[10px]'} ${italic ? 'font-serif italic font-medium' : 'font-bold'}`} style={{ lineHeight: '1.4' }}>
         {value || '---'}
       </span>
     </div>

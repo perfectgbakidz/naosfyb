@@ -49,7 +49,7 @@ export const INITIAL_DATA: StudentData = {
 };
 
 export const LEVEL_LABELS: Record<Level, string> = {
-  ND2: 'ND2',
+  ND2: 'ND2 - CS "DD Legends \'26"',
   HND2_SWD: 'HND2 - SWD "Class of Paragons 2026"',
   HND2_NCC: 'HND2 - NCC "Class of Cloud Pioneers 2026"',
 };

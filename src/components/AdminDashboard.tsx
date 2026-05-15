@@ -167,7 +167,7 @@ export default function AdminDashboard({ onClose }: { onClose: () => void }) {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <StatCard label="ND2 Students" value={stats.nd2_count} />
+              <StatCard label="ND2 CS - DD Legends '26" value={stats.nd2_count} />
               <StatCard label="HND2 SWD" value={stats.hnd2_swd_count} />
               <StatCard label="HND2 NCC" value={stats.hnd2_ncc_count} />
               <StatCard label="Single" value={stats.single_count} color="text-pink-400" />
@@ -329,8 +329,8 @@ function AdminEditor({ record, onClose }: { record: any; onClose: () => void }) 
         </div>
       </div>
 
-      <div className="hidden md:flex flex-1 bg-[#0A1A0F] items-center justify-center p-8 border-l border-[#1E3A28]">
-        <div className="scale-[0.7] origin-center">
+      <div className="hidden md:flex flex-1 bg-[#0A1A0F] items-center justify-center p-8 border-l border-[#1E3A28] overflow-auto">
+        <div className="min-w-fit">
           <FlyerPreview data={studentData} isPaid={true} />
         </div>
       </div>
@@ -338,7 +338,13 @@ function AdminEditor({ record, onClose }: { record: any; onClose: () => void }) 
   );
 }
 
-function FlyerDetailCard({ record, onEdit }: { record: any; onEdit: () => void }) {
+interface FlyerDetailCardProps {
+  record: any;
+  onEdit: () => void;
+  key?: React.Key;
+}
+
+function FlyerDetailCard({ record, onEdit }: FlyerDetailCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasValidPortrait = record.student_portrait && record.student_portrait !== "skipped" && record.student_portrait.startsWith('data:');
 
